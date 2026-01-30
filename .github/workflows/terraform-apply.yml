@@ -1,0 +1,90 @@
+# Reusable Terraform Apply Workflow
+#
+# Runs terraform init, plan, and apply.
+# Uses GitHub Environments for approval gates.
+#
+# Usage:
+#   jobs:
+#     apply:
+#       uses: kschultz27/terraform-ci/.github/workflows/terraform-apply.yml@main
+#       with:
+#         environment: dev
+#         working_directory: terraform/environments/dev
+#         terraform_version: "1.6.0"
+#       secrets: inherit
+
+name: Terraform Apply
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "GitHub Environment name (for approval gates)"
+        required: true
+        type: string
+      working_directory:
+        description: "Path to terraform configuration"
+        required: true
+        type: string
+      terraform_version:
+        description: "Terraform version to use"
+        required: false
+        type: string
+        default: "1.6.0"
+      var_file:
+        description: "Path to tfvars file (relative to working_directory)"
+        required: false
+        type: string
+        default: "terraform.tfvars"
+      runs_on:
+        description: "Runner label"
+        required: false
+        type: string
+        default: "arc-runner-set"
+
+jobs:
+  apply:
+    name: Apply
+    runs-on: ${{ inputs.runs_on }}
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform_version }}
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        run: terraform init -input=false -backend-config="use_oidc=true"
+        working-directory: ${{ inputs.working_directory }}
+        env:
+          ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
+          ARM_USE_OIDC: "true"
+
+      - name: Terraform Plan
+        run: |
+          if [ -f "${{ inputs.var_file }}" ]; then
+            terraform plan -no-color -input=false -var-file="${{ inputs.var_file }}" -out=tfplan
+          else
+            terraform plan -no-color -input=false -out=tfplan
+          fi
+        working-directory: ${{ inputs.working_directory }}
+        env:
+          ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
+          ARM_USE_OIDC: "true"
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+        working-directory: ${{ inputs.working_directory }}
+        env:
+          ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
+          ARM_USE_OIDC: "true"

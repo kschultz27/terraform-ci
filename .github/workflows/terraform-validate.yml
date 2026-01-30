@@ -1,0 +1,85 @@
+# Reusable Terraform Validate Workflow
+#
+# Runs terraform fmt, init, and validate.
+# For configurations that use local state (e.g., bootstrap).
+# No Azure credentials required.
+#
+# Usage:
+#   jobs:
+#     validate:
+#       uses: kschultz27/terraform-ci/.github/workflows/terraform-validate.yml@main
+#       with:
+#         working_directory: bootstrap
+#         terraform_version: "1.6.0"
+
+name: Terraform Validate
+
+on:
+  workflow_call:
+    inputs:
+      working_directory:
+        description: "Path to terraform configuration"
+        required: true
+        type: string
+      terraform_version:
+        description: "Terraform version to use"
+        required: false
+        type: string
+        default: "1.6.0"
+      runs_on:
+        description: "Runner label"
+        required: false
+        type: string
+        default: "arc-runner-set"
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ${{ inputs.runs_on }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform_version }}
+          terraform_wrapper: false
+
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check -recursive
+        working-directory: ${{ inputs.working_directory }}
+
+      - name: Terraform Init
+        id: init
+        run: terraform init -input=false
+        working-directory: ${{ inputs.working_directory }}
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+        working-directory: ${{ inputs.working_directory }}
+
+      - name: Post Result to PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const workDir = '${{ inputs.working_directory }}';
+            const body = `### Terraform Validate — \`${workDir}\`
+
+            | Step | Result |
+            |------|--------|
+            | Format | \`${{ steps.fmt.outcome }}\` |
+            | Init | \`${{ steps.init.outcome }}\` |
+            | Validate | \`${{ steps.validate.outcome }}\` |
+
+            > This configuration uses local state and is applied manually.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
