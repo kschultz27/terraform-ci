@@ -12,9 +12,11 @@ Reusable GitHub Actions workflows for Terraform CI/CD with Azure OIDC authentica
 
 ## Prerequisites
 
+> **Detailed Setup Guide:** See [docs/OIDC-SETUP.md](docs/OIDC-SETUP.md) for step-by-step Azure Portal and CLI instructions.
+
 ### 1. Azure App Registration with Federated Credentials
 
-Create an app registration with federated credentials for each repo:
+Create an app registration with federated credentials for each **calling repo** (not terraform-ci):
 
 | Credential | Subject |
 |------------|---------|
@@ -27,7 +29,7 @@ All credentials use:
 
 ### 2. GitHub Repository Variables
 
-Set these as repository variables (not secrets):
+Set these as repository variables (not secrets) in each calling repo:
 
 | Variable | Value |
 |----------|-------|
@@ -37,7 +39,7 @@ Set these as repository variables (not secrets):
 
 ### 3. GitHub Environments
 
-Create environments in your repo settings to enable approval gates:
+Create environments in each calling repo to enable approval gates:
 
 | Environment | Protection Rules |
 |-------------|-----------------|
