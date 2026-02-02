@@ -207,13 +207,13 @@ STORAGE_RESOURCE_GROUP="edm-runners-tfstate-rg"
 
 # Assign Contributor on subscription
 az role assignment create \
-  --assignee "$APP_ID" \
+  --assignee "$SP_OBJECT_ID" \
   --role "Contributor" \
   --scope "/subscriptions/$SUBSCRIPTION_ID"
 
 # Assign User Access Administrator on subscription
 az role assignment create \
-  --assignee "$APP_ID" \
+  --assignee "$SP_OBJECT_ID" \
   --role "User Access Administrator" \
   --scope "/subscriptions/$SUBSCRIPTION_ID"
 
@@ -224,7 +224,7 @@ STORAGE_ID=$(az storage account show \
   --query "id" -o tsv)
 
 az role assignment create \
-  --assignee "$APP_ID" \
+  --assignee "$SP_OBJECT_ID" \
   --role "Storage Blob Data Contributor" \
   --scope "$STORAGE_ID"
 ```
@@ -236,13 +236,13 @@ For tighter control, scope to specific resource groups:
 ```bash
 # Assign Contributor on specific resource group only
 az role assignment create \
-  --assignee "$APP_ID" \
+  --assignee "$SP_OBJECT_ID" \
   --role "Contributor" \
   --scope "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/edm-dp-dev-rg"
 
 # Assign User Access Administrator on specific resource group only
 az role assignment create \
-  --assignee "$APP_ID" \
+  --assignee "$SP_OBJECT_ID" \
   --role "User Access Administrator" \
   --scope "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/edm-dp-dev-rg"
 
