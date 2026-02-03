@@ -41,6 +41,11 @@ on:
         required: false
         type: string
         default: "arc-runner-set"
+      refresh:
+        description: "Whether to refresh state (set to false if SP lacks data plane read access)"
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   apply:
@@ -68,10 +73,14 @@ jobs:
 
       - name: Terraform Plan
         run: |
+          REFRESH_FLAG=""
+          if [ "${{ inputs.refresh }}" = "false" ]; then
+            REFRESH_FLAG="-refresh=false"
+          fi
           if [ -f "${{ inputs.var_file }}" ]; then
-            terraform plan -no-color -input=false -var-file="${{ inputs.var_file }}" -out=tfplan
+            terraform plan -no-color -input=false $REFRESH_FLAG -var-file="${{ inputs.var_file }}" -out=tfplan
           else
-            terraform plan -no-color -input=false -out=tfplan
+            terraform plan -no-color -input=false $REFRESH_FLAG -out=tfplan
           fi
         working-directory: ${{ inputs.working_directory }}
         env:
