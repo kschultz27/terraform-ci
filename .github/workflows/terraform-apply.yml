@@ -46,6 +46,11 @@ on:
         required: false
         type: boolean
         default: true
+      state_rm:
+        description: "Space-separated list of resources to remove from state before plan (one-time cleanup)"
+        required: false
+        type: string
+        default: ""
 
 jobs:
   apply:
@@ -64,6 +69,20 @@ jobs:
 
       - name: Terraform Init
         run: terraform init -input=false -backend-config="use_oidc=true"
+        working-directory: ${{ inputs.working_directory }}
+        env:
+          ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
+          ARM_USE_OIDC: "true"
+
+      - name: Remove Resources from State
+        if: inputs.state_rm != ''
+        run: |
+          for resource in ${{ inputs.state_rm }}; do
+            echo "Removing $resource from state..."
+            terraform state rm "$resource" || echo "Resource $resource not in state (already removed)"
+          done
         working-directory: ${{ inputs.working_directory }}
         env:
           ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
