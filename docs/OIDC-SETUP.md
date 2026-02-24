@@ -190,7 +190,7 @@ This limits blast radius: if the SP is compromised, the attacker can read/write 
 
 **Storage Account Role (for Terraform State):**
 
-1. Navigate to **Storage accounts** > select your state storage account (e.g., `edmrunnerstfstate`)
+1. Navigate to **Storage accounts** > select your state storage account (e.g., `st20sharedtfstate01`)
 2. Go to **Access control (IAM)**
 3. Click **Add** > **Add role assignment**
 4. **Role tab:** Select "Storage Blob Data Contributor"
@@ -202,8 +202,8 @@ This limits blast radius: if the SP is compromised, the attacker can read/write 
 ```bash
 # Set variables
 SUBSCRIPTION_ID="<your-subscription-id>"  # e.g., Data-Dev-QA-001 subscription ID
-STORAGE_ACCOUNT_NAME="edmrunnerstfstate"
-STORAGE_RESOURCE_GROUP="edm-runners-tfstate-rg"
+STORAGE_ACCOUNT_NAME="st20sharedtfstate01"
+STORAGE_RESOURCE_GROUP="rg-20-shared-tfstate-01"
 
 # Assign Contributor on subscription
 az role assignment create \
@@ -238,13 +238,13 @@ For tighter control, scope to specific resource groups:
 az role assignment create \
   --assignee "$SP_OBJECT_ID" \
   --role "Contributor" \
-  --scope "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/edm-dp-dev-rg"
+  --scope "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/rg-20-dev-dp-01"
 
 # Assign User Access Administrator on specific resource group only
 az role assignment create \
   --assignee "$SP_OBJECT_ID" \
   --role "User Access Administrator" \
-  --scope "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/edm-dp-dev-rg"
+  --scope "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/rg-20-dev-dp-01"
 
 # Repeat for each resource group the SP needs to manage
 ```
@@ -454,8 +454,8 @@ terraform {
   }
 
   backend "azurerm" {
-    resource_group_name  = "edm-runners-tfstate-rg"
-    storage_account_name = "edmrunnerstfstate"
+    resource_group_name  = "rg-20-shared-tfstate-01"
+    storage_account_name = "st20sharedtfstate01"
     container_name       = "healthcare-data-platform"  # or your container
     key                  = "dev.tfstate"               # or your state file
     use_oidc             = true
