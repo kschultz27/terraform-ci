@@ -78,6 +78,7 @@ jobs:
           ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
           ARM_USE_OIDC: "true"
+          DATABRICKS_AUTH_TYPE: "azure-cli"
 
       - name: Terraform Validate
         id: validate
@@ -104,6 +105,7 @@ jobs:
           ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
           ARM_USE_OIDC: "true"
+          DATABRICKS_AUTH_TYPE: "azure-cli"
 
       - name: Post Plan to PR
         if: github.event_name == 'pull_request'
