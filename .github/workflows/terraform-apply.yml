@@ -56,6 +56,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.ARM_CLIENT_ID }}
+          tenant-id: ${{ vars.ARM_TENANT_ID }}
+          subscription-id: ${{ vars.ARM_SUBSCRIPTION_ID }}
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -70,7 +77,6 @@ jobs:
           ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
           ARM_USE_OIDC: "true"
-          DATABRICKS_AUTH_TYPE: "github-oidc-azure"
 
       - name: Terraform Plan
         run: |
@@ -89,7 +95,6 @@ jobs:
           ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
           ARM_USE_OIDC: "true"
-          DATABRICKS_AUTH_TYPE: "github-oidc-azure"
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
@@ -99,4 +104,3 @@ jobs:
           ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
           ARM_USE_OIDC: "true"
-          DATABRICKS_AUTH_TYPE: "github-oidc-azure"
