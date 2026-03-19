@@ -57,30 +57,6 @@ jobs:
           tenant-id: ${{ vars.ARM_TENANT_ID }}
           subscription-id: ${{ vars.ARM_SUBSCRIPTION_ID }}
 
-      - name: Debug Databricks Auth
-        run: |
-          echo "=== Azure CLI account ==="
-          az account show -o table
-          echo ""
-          echo "=== Azure CLI version ==="
-          az version -o table
-          echo ""
-          echo "=== Databricks-scoped token request ==="
-          if az account get-access-token --resource 2ff814a6-3304-4ab8-85cb-cd0e6f879c1d --query accessToken -o tsv 2>/tmp/dbx-token-err | head -c 20; then
-            echo "...(truncated) - SUCCESS"
-          else
-            echo "FAILED to get Databricks token"
-            cat /tmp/dbx-token-err
-          fi
-          echo ""
-          echo "=== ARM-scoped token request ==="
-          if az account get-access-token --query accessToken -o tsv 2>/tmp/arm-token-err | head -c 20; then
-            echo "...(truncated) - SUCCESS"
-          else
-            echo "FAILED to get ARM token"
-            cat /tmp/arm-token-err
-          fi
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:

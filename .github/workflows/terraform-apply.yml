@@ -46,6 +46,11 @@ on:
         required: false
         type: boolean
         default: true
+      targets:
+        description: "Comma-separated list of Terraform targets (e.g., 'module.databricks,module.networking'). Empty means apply all."
+        required: false
+        type: string
+        default: ""
 
 jobs:
   apply:
@@ -85,10 +90,17 @@ jobs:
           if [ "${{ inputs.refresh }}" = "false" ]; then
             REFRESH_FLAG="-refresh=false"
           fi
+          TARGET_FLAGS=""
+          if [ -n "${{ inputs.targets }}" ]; then
+            IFS=',' read -ra TARGETS <<< "${{ inputs.targets }}"
+            for target in "${TARGETS[@]}"; do
+              TARGET_FLAGS="$TARGET_FLAGS -target=$(echo $target | xargs)"
+            done
+          fi
           if [ -f "${{ inputs.var_file }}" ]; then
-            terraform plan -no-color -input=false $REFRESH_FLAG -var-file="${{ inputs.var_file }}" -out=tfplan
+            terraform plan -no-color -input=false $REFRESH_FLAG $TARGET_FLAGS -var-file="${{ inputs.var_file }}" -out=tfplan
           else
-            terraform plan -no-color -input=false $REFRESH_FLAG -out=tfplan
+            terraform plan -no-color -input=false $REFRESH_FLAG $TARGET_FLAGS -out=tfplan
           fi
         working-directory: ${{ inputs.working_directory }}
         env:
